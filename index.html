@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz — Cirurgia do Trato Digestório</title>
+<style>
+  :root{
+    --azul:#0b3d91; --azul-escuro:#062a66; --azul-claro:#5b8def; --azul-bg:#eaf1ff;
+    --branco:#ffffff; --cinza:#5f6b7a; --verde:#1e9e5a; --vermelho:#d64545; --amarelo:#f2b705;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(160deg,var(--azul-escuro),var(--azul) 55%,var(--azul-claro));min-height:100vh;color:#14213d;display:flex;justify-content:center;padding:20px 12px}
+  .wrap{width:100%;max-width:660px}
+  .card{background:var(--branco);border-radius:18px;padding:26px 22px;box-shadow:0 12px 40px rgba(0,0,0,.25);margin-bottom:16px}
+  header.top{text-align:center;color:var(--branco);margin-bottom:18px}
+  .badge{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:999px;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+  header.top h1{font-size:26px;margin:10px 0 4px;line-height:1.2}
+  header.top p{opacity:.85;font-size:14px}
+  h2{color:var(--azul);font-size:20px;margin-bottom:12px}
+  label{display:block;font-weight:600;font-size:14px;margin:14px 0 6px;color:var(--azul-escuro)}
+  input{width:100%;padding:12px 14px;border:2px solid #d5def0;border-radius:10px;font-size:16px;outline:none}
+  input:focus{border-color:var(--azul-claro)}
+  .regras{background:var(--azul-bg);border-radius:12px;padding:14px 16px;margin-top:16px;font-size:14px;line-height:1.55;color:#24324d}
+  .regras li{margin-left:18px}
+  .btn{display:block;width:100%;margin-top:18px;padding:14px;border:none;border-radius:12px;background:var(--azul);color:var(--branco);font-size:17px;font-weight:700;cursor:pointer;transition:transform .08s,background .2s}
+  .btn:hover{background:var(--azul-escuro)} .btn:active{transform:scale(.98)}
+  .btn:disabled{background:#9fb3d9;cursor:default}
+  .btn.sec{background:var(--azul-bg);color:var(--azul)}
+  .erro-msg{color:var(--vermelho);font-size:14px;margin-top:10px;min-height:18px}
+  .hidden{display:none!important}
+  .barra-topo{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--cinza);margin-bottom:10px}
+  .progresso{height:8px;background:#e3e9f6;border-radius:99px;overflow:hidden;margin-bottom:16px}
+  .progresso div{height:100%;background:var(--azul-claro);width:0;transition:width .3s}
+  .timer{position:relative;width:78px;height:78px;margin:0 auto 14px}
+  .timer svg{transform:rotate(-90deg)}
+  .timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:var(--azul)}
+  .pergunta{font-size:20px;font-weight:600;line-height:1.4;text-align:center;margin-bottom:20px;min-height:56px}
+  .opcoes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .opcao{padding:20px 10px;border-radius:14px;border:3px solid #d5def0;background:var(--branco);font-size:18px;font-weight:800;cursor:pointer;color:var(--azul);transition:transform .08s,background .15s}
+  .opcao:active{transform:scale(.97)}
+  .opcao.sel{background:var(--azul);color:var(--branco);border-color:var(--azul)}
+  .aviso{text-align:center;font-size:13px;color:var(--cinza);margin-top:10px}
+  .resultado-num{font-size:52px;font-weight:800;color:var(--azul);text-align:center}
+  .resultado-sub{text-align:center;color:var(--cinza);margin-bottom:6px}
+  .dupla{text-align:center;font-weight:600;color:var(--azul-escuro);margin-bottom:6px}
+  .stats{display:flex;gap:10px;justify-content:center;margin:12px 0}
+  .stat{background:var(--azul-bg);border-radius:12px;padding:10px 16px;text-align:center;min-width:100px}
+  .stat b{display:block;font-size:22px;color:var(--azul)}
+  .status-envio{text-align:center;font-size:14px;margin-top:8px}
+  .status-envio.ok{color:var(--verde)} .status-envio.erro{color:var(--vermelho)}
+  .gab-item{border-left:5px solid var(--verde);background:#f3faf6;border-radius:10px;padding:12px 14px;margin-bottom:10px}
+  .gab-item.errou{border-left-color:var(--vermelho);background:#fdf3f3}
+  .gab-q{font-weight:600;margin-bottom:6px;line-height:1.4}
+  .gab-r{font-size:14px;margin-bottom:6px}
+  .gab-r .ok{color:var(--verde);font-weight:700} .gab-r .nok{color:var(--vermelho);font-weight:700}
+  .gab-e{font-size:14px;color:#33415c;line-height:1.45}
+  .ranking-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;margin-bottom:6px;background:#f5f8ff}
+  .ranking-item.eu{background:#fff6d6;border:2px solid var(--amarelo)}
+  .ranking-pos{font-weight:800;width:30px;text-align:center;color:var(--azul)}
+  .ranking-nome{flex:1;font-weight:600}
+  .ranking-pts{font-weight:700;color:var(--azul-escuro)}
+  footer{text-align:center;color:rgba(255,255,255,.75);font-size:12px;margin-top:6px}
+  @media(max-width:420px){.pergunta{font-size:18px}.opcao{padding:18px 8px;font-size:16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="badge">Cirurgia Veterinária</div>
+    <h1>Cirurgia do Trato Digestório<br>de Pequenos Animais</h1>
+    <p>Quiz em dupla · Prof. Mv. Esp. José Alírio S. O. Júnior</p>
+  </header>
+
+  <!-- INÍCIO -->
+  <section id="tela-inicio" class="card">
+    <h2>Identificação da dupla</h2>
+    <label for="nome1">Aluno 1 — nome completo</label>
+    <input id="nome1" type="text" placeholder="Nome e sobrenome" maxlength="60">
+    <label for="nome2">Aluno 2 — nome completo</label>
+    <input id="nome2" type="text" placeholder="Nome e sobrenome" maxlength="60">
+    <div class="regras">
+      <ul>
+        <li><strong>25 questões</strong> de Verdadeiro ou Falso, valendo <strong>0,12 ponto cada</strong> (total de 3,0 pontos).</li>
+        <li>Cada questão tem <strong>55 segundos</strong>. Quando o tempo acaba, o quiz avança sozinho.</li>
+        <li>Você pode <strong>trocar a resposta</strong> enquanto estiver na questão.</li>
+        <li>Depois de avançar, <strong>não é possível voltar</strong>.</li>
+        <li>A nota e o gabarito comentado aparecem <strong>só no final</strong>, após o envio.</li>
+        <li>Só é permitida <strong>uma tentativa</strong> por dupla.</li>
+      </ul>
+    </div>
+    <div class="erro-msg" id="erro-inicio"></div>
+    <button class="btn" id="btn-iniciar">Começar</button>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="tela-quiz" class="card hidden">
+    <div class="barra-topo"><span id="contador">Questão 1/25</span><span id="respondidas"></span></div>
+    <div class="progresso"><div id="barra"></div></div>
+    <div class="timer">
+      <svg width="78" height="78"><circle cx="39" cy="39" r="33" stroke="#e3e9f6" stroke-width="7" fill="none"/>
+        <circle id="timer-circ" cx="39" cy="39" r="33" stroke="#0b3d91" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="207.35" stroke-dashoffset="0"/></svg>
+      <span class="timer-num" id="timer-num">55</span>
+    </div>
+    <div class="pergunta" id="pergunta"></div>
+    <div class="opcoes">
+      <button class="opcao" data-v="true">VERDADEIRO</button>
+      <button class="opcao" data-v="false">FALSO</button>
+    </div>
+    <button class="btn" id="btn-proxima" disabled>Próxima ➜</button>
+    <div class="aviso">Ao avançar, não será possível voltar a esta questão.</div>
+  </section>
+
+  <!-- ENVIO -->
+  <section id="tela-envio" class="card hidden">
+    <h2 style="text-align:center">Questões concluídas</h2>
+    <p style="text-align:center;color:#5f6b7a" id="resumo-envio"></p>
+    <button class="btn" id="btn-enviar">📤 Enviar respostas</button>
+  </section>
+
+  <!-- RESULTADO -->
+  <section id="tela-final" class="card hidden">
+    <h2 style="text-align:center">Resultado</h2>
+    <div class="dupla" id="res-dupla"></div>
+    <div class="resultado-num" id="res-nota">0</div>
+    <div class="resultado-sub">pontos (de 0 a 3,00)</div>
+    <div class="stats">
+      <div class="stat"><b id="res-acertos">0</b>acertos</div>
+      <div class="stat"><b id="res-erros">0</b>erros</div>
+      <div class="stat"><b id="res-branco">0</b>sem resposta</div>
+    </div>
+    <div class="status-envio" id="status-envio"></div>
+  </section>
+
+  <section id="tela-gabarito" class="card hidden">
+    <h2>📋 Gabarito comentado</h2>
+    <div id="gabarito"></div>
+  </section>
+
+  <section id="tela-ranking" class="card hidden">
+    <h2>🏆 Ranking das duplas</h2>
+    <div id="ranking-lista"><p style="color:#5f6b7a">Carregando…</p></div>
+    <button class="btn sec" id="btn-ranking">🔄 Atualizar ranking</button>
+  </section>
+
+  <footer>Quiz interativo · Cirurgia Veterinária</footer>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONFIGURAÇÃO
+// ══════════════════════════════════════════════════════════
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6BD6CaZP376jeWh_1PJ6n9JE4S920dIrulwDrU5F1lWtVe7t2VEKo1P-kbq0Fes41/exec';
+const TEMPO_POR_QUESTAO = 55;   // segundos
+const VALOR_QUESTAO = 0.12;     // pontos por acerto (25 × 0,12 = 3,0)
+const ID_QUIZ = 'quiz-trato-digestorio-pequenos-dupla';
+const ABA_PLANILHA = 'Resultados 2';   // aba do Google Sheets onde os resultados serão gravados
+
+// ══════════════════════════════════════════════════════════
+//  BANCO DE PERGUNTAS (c: true = Verdadeiro · false = Falso · e: comentário)
+// ══════════════════════════════════════════════════════════
+const perguntas = [
+  { q: "A sonda de esofagostomia é inserida preferencialmente no lado esquerdo do pescoço.", c: true, e: "Verdadeiro. A esofagostomia é feita do lado esquerdo, onde o esôfago cervical fica mais acessível." },
+  { q: "A sonda de esofagostomia é fixada à pele com fio absorvível.", c: false, e: "Falso. A fixação é feita com fio não absorvível 2-0 em ponto de bailarina, protegida por bandagem." },
+  { q: "O esôfago cicatriza com facilidade por possuir serosa e omento.", c: false, e: "Falso. O esôfago não tem serosa nem omento e sofre tensão respiratória e peristaltismo, o que dificulta a cicatrização." },
+  { q: "Na esofagotomia cervical, a traqueia é deslocada para a esquerda.", c: false, e: "Falso. A traqueia é deslocada para a direita, com cuidado para não lesar o nervo laríngeo recorrente." },
+  { q: "A incisão da esofagotomia deve ser feita em região saudável do esôfago.", c: true, e: "Verdadeiro. A incisão longitudinal é feita em região saudável, não sobre a área lesionada pelo corpo estranho." },
+  { q: "Na sutura de Swift, os nós ficam voltados para o lúmen do esôfago.", c: true, e: "Verdadeiro. A sutura de Swift começa e termina pela luz do órgão, deixando os nós voltados para o lúmen." },
+  { q: "Após a esofagotomia, recomenda-se jejum de 24 a 48 horas.", c: true, e: "Verdadeiro. Jejum de 24 a 48 h, com protetores de mucosa e antieméticos; dieta branda no 3º dia se assintomático." },
+  { q: "A gastrotomia é realizada por incisão mediana retroumbilical.", c: false, e: "Falso. A gastrotomia é feita por incisão mediana ventral pré-umbilical." },
+  { q: "A incisão da gastrotomia é feita entre as curvaturas maior e menor do estômago.", c: true, e: "Verdadeiro. A incisão é feita em área hipovascular, entre as curvaturas maior e menor." },
+  { q: "A síntese da gastrotomia é feita em plano único com fio inabsorvível.", c: false, e: "Falso. A síntese é feita em dois planos (Cushing ou simples contínuo + Lembert ou Cushing) com fio absorvível sintético 2-0 ou 3-0." },
+  { q: "Após a gastrotomia, oferece-se alimento sólido já nas primeiras 24 horas.", c: false, e: "Falso. Após 24 h, pouco alimento líquido; após 48 h, semilíquido; o sólido entra gradativamente após 72 h." },
+  { q: "Na DVG, uma rotação gástrica superior a 180° caracteriza vólvulo.", c: true, e: "Verdadeiro. Rotação menor que 180° é torção; entre 270° e 360° (acima de 180°) é vólvulo." },
+  { q: "Vômito não produtivo e sialorreia são sinais clínicos de DVG.", c: true, e: "Verdadeiro. Também ocorrem desconforto, apatia, distensão e sensibilidade abdominal e dispneia." },
+  { q: "Oferecer uma única refeição diária em grande quantidade ajuda a prevenir a DVG.", c: false, e: "Falso. Refeição única em grande quantidade é fator de risco; o ideal é alimentar 3 vezes ao dia, em pequenas porções." },
+  { q: "A descompressão gástrica é o procedimento de maior importância na estabilização da DVG.", c: true, e: "Verdadeiro. A descompressão melhora retorno venoso, ventilação e perfusão e deve ser feita assim que houver acesso venoso." },
+  { q: "A descompressão gástrica percutânea é feita com agulhas de fino calibre.", c: false, e: "Falso. Usam-se 2 a 3 agulhas de grosso calibre, em ponto localizado por percussão, com cuidado com o baço." },
+  { q: "A gastropexia é realizada para prevenir a recidiva da DVG.", c: true, e: "Verdadeiro. A gastropexia preventiva é um dos três objetivos do tratamento cirúrgico, junto com o reposicionamento e o tratamento das complicações." },
+  { q: "Antes de decidir pela gastrectomia na DVG, aguarda-se cerca de 15 minutos para reavaliar a viabilidade.", c: true, e: "Verdadeiro. Avalia-se coloração, permeabilidade vascular e palpação, aguardando cerca de 15 minutos antes da decisão." },
+  { q: "O corpo estranho linear pode ficar ancorado na base da língua.", c: true, e: "Verdadeiro. Ele pode ancorar-se na base da língua e, com frequência, no piloro." },
+  { q: "O diagnóstico do corpo estranho linear é rápido, pois seus sinais clínicos são específicos.", c: false, e: "Falso. Os sinais (vômito, anorexia, apatia) são inespecíficos, e o diagnóstico pode ser retardado." },
+  { q: "Na intussuscepção, o intussuscepto é o segmento que recebe a porção invaginada.", c: false, e: "Falso. O intussuscepto é a porção que se invagina; o segmento que a recebe é o intussuscipiente." },
+  { q: "Na ultrassonografia, a intussuscepção aparece como anéis concêntricos em corte transversal.", c: true, e: "Verdadeiro. Os anéis concêntricos refletem as camadas dobradas da parede intestinal; no corte longitudinal aparecem linhas paralelas." },
+  { q: "A incisão da enterotomia é feita na borda mesentérica da alça intestinal.", c: false, e: "Falso. A incisão é feita na face antimesentérica, em parênquima sadio." },
+  { q: "Na dúvida sobre a viabilidade intestinal, deve-se subestimar a área de ressecção.", c: false, e: "Falso. Como os critérios de viabilidade nem sempre são confiáveis, deve-se superestimar a área de ressecção." },
+  { q: "O jejum pré-operatório para cirurgia intestinal em cães e gatos adultos é de 12 a 18 horas.", c: true, e: "Verdadeiro. Em adultos, 12 a 18 horas; em filhotes, 4 a 8 horas." }
+];
+
+// ══════════════════════════════════════════════════════════
+//  ESTADO
+// ══════════════════════════════════════════════════════════
+let aluno1 = '', aluno2 = '', ordem = [], idx = 0, respostas = [], selecionada = null;
+let tempoRestante = TEMPO_POR_QUESTAO, intervalo = null, enviado = false;
+let nota = 0, acertos = 0, erros = 0, branco = 0;
+const $ = id => document.getElementById(id);
+const norm = s => s.trim().toLowerCase().replace(/\s+/g,' ');
+function nomeDupla(){ return aluno1 + ' e ' + aluno2; }
+function chaveDupla(){ return ID_QUIZ + '|' + [norm(aluno1), norm(aluno2)].sort().join('|'); }
+function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+function lsSet(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
+function embaralhar(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function mostrar(ids){ ['tela-inicio','tela-quiz','tela-envio','tela-final','tela-gabarito','tela-ranking'].forEach(t => $(t).classList.add('hidden')); ids.forEach(t => $(t).classList.remove('hidden')); window.scrollTo(0,0); }
+
+// ══════════════════════════════════════════════════════════
+//  INÍCIO
+// ══════════════════════════════════════════════════════════
+$('btn-iniciar').onclick = () => {
+  const n1 = $('nome1').value.trim(), n2 = $('nome2').value.trim();
+  if (n1.split(/\s+/).length < 2 || n2.split(/\s+/).length < 2) { $('erro-inicio').textContent = 'Digite nome e sobrenome dos dois alunos.'; return; }
+  if (norm(n1) === norm(n2)) { $('erro-inicio').textContent = 'Os dois nomes precisam ser diferentes.'; return; }
+  aluno1 = n1; aluno2 = n2;
+  if (lsGet(chaveDupla())) { $('erro-inicio').textContent = 'Esta dupla já fez o quiz neste aparelho.'; return; }
+  lsSet(chaveDupla(), 'em-andamento');
+  ordem = embaralhar([...perguntas.keys()]);
+  respostas = new Array(perguntas.length).fill(null);
+  mostrar(['tela-quiz']);
+  abrirQuestao();
+};
+
+// ══════════════════════════════════════════════════════════
+//  QUIZ
+// ══════════════════════════════════════════════════════════
+function abrirQuestao(){
+  selecionada = null;
+  $('contador').textContent = `Questão ${idx+1}/${ordem.length}`;
+  $('barra').style.width = (idx/ordem.length*100) + '%';
+  $('pergunta').textContent = perguntas[ordem[idx]].q;
+  document.querySelectorAll('.opcao').forEach(b => b.classList.remove('sel'));
+  $('btn-proxima').disabled = true;
+  $('btn-proxima').textContent = idx === ordem.length - 1 ? 'Concluir ➜' : 'Próxima ➜';
+  tempoRestante = TEMPO_POR_QUESTAO; atualizarTimer();
+  clearInterval(intervalo);
+  intervalo = setInterval(() => {
+    tempoRestante -= 0.1;
+    if (tempoRestante <= 0) { tempoRestante = 0; atualizarTimer(); avancar(); }
+    else atualizarTimer();
+  }, 100);
+}
+
+function atualizarTimer(){
+  $('timer-num').textContent = Math.ceil(tempoRestante);
+  const frac = tempoRestante / TEMPO_POR_QUESTAO;
+  const c = $('timer-circ');
+  c.setAttribute('stroke-dashoffset', (207.35 * (1 - frac)).toFixed(2));
+  c.setAttribute('stroke', frac > .5 ? '#0b3d91' : frac > .2 ? '#f2b705' : '#d64545');
+}
+
+document.querySelectorAll('.opcao').forEach(b => b.onclick = () => {
+  selecionada = b.dataset.v === 'true';
+  document.querySelectorAll('.opcao').forEach(x => x.classList.toggle('sel', x === b));
+  $('btn-proxima').disabled = false;
+});
+$('btn-proxima').onclick = () => avancar();
+
+function avancar(){
+  clearInterval(intervalo);
+  respostas[ordem[idx]] = selecionada;
+  idx++;
+  $('respondidas').textContent = `${respostas.filter(r => r !== null).length} respondidas`;
+  if (idx >= ordem.length) return telaEnvio();
+  abrirQuestao();
+}
+
+// ══════════════════════════════════════════════════════════
+//  ENVIO E RESULTADO
+// ══════════════════════════════════════════════════════════
+function telaEnvio(){
+  $('barra').style.width = '100%';
+  const resp = respostas.filter(r => r !== null).length;
+  $('resumo-envio').textContent = `Vocês responderam ${resp} de ${perguntas.length} questões. Clique em enviar para ver a nota e o gabarito.`;
+  lsSet(chaveDupla(), 'concluido-sem-envio');
+  mostrar(['tela-envio']);
+}
+
+$('btn-enviar').onclick = async () => {
+  if (enviado) return;
+  enviado = true; $('btn-enviar').disabled = true; $('btn-enviar').textContent = 'Enviando…';
+  acertos = 0; erros = 0; branco = 0;
+  perguntas.forEach((p, i) => { const r = respostas[i]; if (r === null) branco++; else if (r === p.c) acertos++; else erros++; });
+  nota = Math.round(acertos * VALOR_QUESTAO * 100) / 100;
+  lsSet(chaveDupla(), JSON.stringify({nota, acertos, erros, branco}));
+  await enviarResultados();
+  mostrarResultado();
+};
+
+function mostrarResultado(){
+  $('res-dupla').textContent = nomeDupla();
+  $('res-nota').textContent = nota.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  $('res-acertos').textContent = acertos; $('res-erros').textContent = erros; $('res-branco').textContent = branco;
+  const g = $('gabarito'); g.innerHTML = '';
+  perguntas.forEach((p, i) => {
+    const r = respostas[i], certo = r === p.c;
+    const d = document.createElement('div'); d.className = 'gab-item' + (certo ? '' : ' errou');
+    const q = document.createElement('div'); q.className = 'gab-q'; q.textContent = (i+1) + '. ' + p.q;
+    const rr = document.createElement('div'); rr.className = 'gab-r';
+    const txt = v => v === null ? 'sem resposta' : (v ? 'Verdadeiro' : 'Falso');
+    rr.innerHTML = `Sua resposta: <span class="${certo ? 'ok' : 'nok'}">${txt(r)} ${certo ? '✔' : '✘'}</span> · Gabarito: <b>${txt(p.c)}</b>`;
+    const e = document.createElement('div'); e.className = 'gab-e'; e.textContent = p.e;
+    d.append(q, rr, e); g.appendChild(d);
+  });
+  mostrar(['tela-final','tela-gabarito','tela-ranking']);
+  setTimeout(carregarRanking, 1500);
+}
+
+async function enviarResultados(){
+  const st = $('status-envio');
+  if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.startsWith('COLE_AQUI')) {
+    st.textContent = '⚠️ URL do Google Sheets não configurada.'; st.className = 'status-envio erro'; return;
+  }
+  const agora = new Date();
+  const payload = { acao:'registrar', aba: ABA_PLANILHA, nome: nomeDupla(), aluno1, aluno2, turma:'Dupla', pontuacao: nota, nota, acertos, erros, branco,
+    data: agora.toLocaleDateString('pt-BR'), hora: agora.toLocaleTimeString('pt-BR') };
+  try {
+    await fetch(GOOGLE_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload) });
+    st.textContent = '✅ Resultado enviado!'; st.className = 'status-envio ok';
+  } catch(e) {
+    st.textContent = '❌ Erro ao enviar. Mostre esta tela ao professor.'; st.className = 'status-envio erro';
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  RANKING
+// ══════════════════════════════════════════════════════════
+async function carregarRanking(){
+  const lista = $('ranking-lista');
+  if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.startsWith('COLE_AQUI')) { lista.innerHTML = '<p style="color:#5f6b7a">Ranking indisponível (URL não configurada).</p>'; return; }
+  lista.innerHTML = '<p style="color:#5f6b7a">Carregando…</p>';
+  try {
+    const r = await fetch(GOOGLE_SCRIPT_URL + '?aba=' + encodeURIComponent(ABA_PLANILHA) + '&t=' + Date.now());
+    const dados = (await r.json()).sort((a,b) => Number(b.pontuacao) - Number(a.pontuacao));
+    if (!dados.length) { lista.innerHTML = '<p style="color:#5f6b7a">Ainda não há resultados.</p>'; return; }
+    lista.innerHTML = '';
+    const medalhas = ['🥇','🥈','🥉'];
+    dados.slice(0, 15).forEach((item, i) => {
+      const eu = norm(String(item.nome)) === norm(nomeDupla());
+      const div = document.createElement('div'); div.className = 'ranking-item' + (eu ? ' eu' : '');
+      const pos = document.createElement('div'); pos.className = 'ranking-pos'; pos.textContent = medalhas[i] || (i+1) + 'º';
+      const nome = document.createElement('div'); nome.className = 'ranking-nome'; nome.textContent = item.nome + (eu ? ' (vocês)' : '');
+      const pts = document.createElement('div'); pts.className = 'ranking-pts'; pts.textContent = Number(item.pontuacao).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+      div.append(pos, nome, pts); lista.appendChild(div);
+    });
+  } catch(e) { lista.innerHTML = '<p style="color:#d64545">Não foi possível carregar o ranking.</p>'; }
+}
+$('btn-ranking').onclick = carregarRanking;
+</script>
+</body>
+</html>
