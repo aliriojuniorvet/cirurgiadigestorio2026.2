@@ -199,7 +199,10 @@ function nomeDupla(){ return aluno1 + ' e ' + aluno2; }
 function chaveDupla(){ return ID_QUIZ + '|' + [norm(aluno1), norm(aluno2)].sort().join('|'); }
 function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
 function lsSet(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
-function embaralhar(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function aleatorio(n){ // inteiro aleatório em [0, n) — usa o gerador criptográfico do navegador
+  try { const u = new Uint32Array(1); crypto.getRandomValues(u); return u[0] % n; } catch(e){ return Math.floor(Math.random()*n); }
+}
+function embaralhar(a){ for(let i=a.length-1;i>0;i--){ const j=aleatorio(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function mostrar(ids){ ['tela-inicio','tela-quiz','tela-envio','tela-final','tela-gabarito','tela-ranking'].forEach(t => $(t).classList.add('hidden')); ids.forEach(t => $(t).classList.remove('hidden')); window.scrollTo(0,0); }
 
 // ══════════════════════════════════════════════════════════
@@ -289,10 +292,11 @@ function mostrarResultado(){
   $('res-nota').textContent = nota.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
   $('res-acertos').textContent = acertos; $('res-erros').textContent = erros; $('res-branco').textContent = branco;
   const g = $('gabarito'); g.innerHTML = '';
-  perguntas.forEach((p, i) => {
+  ordem.forEach((i, n) => {
+    const p = perguntas[i];
     const r = respostas[i], certo = r === p.c;
     const d = document.createElement('div'); d.className = 'gab-item' + (certo ? '' : ' errou');
-    const q = document.createElement('div'); q.className = 'gab-q'; q.textContent = (i+1) + '. ' + p.q;
+    const q = document.createElement('div'); q.className = 'gab-q'; q.textContent = (n+1) + '. ' + p.q;
     const rr = document.createElement('div'); rr.className = 'gab-r';
     const txt = v => v === null ? 'sem resposta' : (v ? 'Verdadeiro' : 'Falso');
     rr.innerHTML = `Sua resposta: <span class="${certo ? 'ok' : 'nok'}">${txt(r)} ${certo ? '✔' : '✘'}</span> · Gabarito: <b>${txt(p.c)}</b>`;
